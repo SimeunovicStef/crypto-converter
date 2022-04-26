@@ -9,31 +9,41 @@ const CurrencyConverter = () => {
     const [chosenPrimaryCurrency, setChosenPrimaryCurrency] = useState('BTC')
     const [chosenSecondaryCurrency, setChosenSecondaryCurrency] = useState('BTC')
     const [amount, setAmount] = useState(1)
-    const [exchangeRate, setExchangeRate] = useState(0)
+    const [exchangeData, setExchageData] = useState({
+        primaryCurrency: 'BTC',
+        secondaryCurrency: 'BTC',
+        exchangeRate: 0
+    })
+
     const [result, setResult] = useState(0)
 
     const convert = () => {
 
         const options = {
-          method: 'GET',
-          url: 'https://alpha-vantage.p.rapidapi.com/query',
-          params: {from_currency: chosenPrimaryCurrency, function: 'CURRENCY_EXCHANGE_RATE', to_currency: chosenSecondaryCurrency},
-          headers: {
-            'X-RapidAPI-Host': 'alpha-vantage.p.rapidapi.com',
-            'X-RapidAPI-Key': 'ddaf94000fmshf13ebf44fc7a7d5p1d5e98jsn9032284eb4cc'
-          }
+            method: 'GET',
+            url: 'https://alpha-vantage.p.rapidapi.com/query',
+            params: { from_currency: chosenPrimaryCurrency, function: 'CURRENCY_EXCHANGE_RATE', to_currency: chosenSecondaryCurrency },
+            headers: {
+                'X-RapidAPI-Host': 'alpha-vantage.p.rapidapi.com',
+                'X-RapidAPI-Key': process.env.REACT_APP_RAPID_API_KEY
+            }
         }
-        
+
         axios.request(options).then((response) => {
             console.log(response.data["Realtime Currency Exchange Rate"]["5. Exchange Rate"])
-            setExchangeRate(response.data["Realtime Currency Exchange Rate"]["5. Exchange Rate"])
             setResult(response.data["Realtime Currency Exchange Rate"]["5. Exchange Rate"] * amount)
+           
+            setExchageData({
+                primaryCurrency: chosenPrimaryCurrency,
+                secondaryCurrency: chosenSecondaryCurrency,
+                exchangeRate: response.data["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
+            })
         }).catch((error) => {
             console.error(error)
         })
     }
 
-    console.log(exchangeRate)
+
 
     return (
         <div className="currency-converter">
@@ -77,9 +87,8 @@ const CurrencyConverter = () => {
                                     name="currency-option-2"
                                     className="currency-options"
                                     onChange={(e) => setChosenSecondaryCurrency(e.target.value)}
-
                                 >
-                                    {currencies.map((currency, _index) => (<option key={_index}>{currency}</option>))}   
+                                    {currencies.map((currency, _index) => (<option key={_index}>{currency}</option>))}
                                 </select>
                             </td>
                         </tr>
@@ -89,7 +98,8 @@ const CurrencyConverter = () => {
             </div>
 
             <ExchangeRate
-            exchangeRate={exchangeRate}
+                exchangeData={exchangeData}
+
             />
 
         </div>
